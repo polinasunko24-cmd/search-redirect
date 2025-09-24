@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Перенаправление на поиск</title>
+    <script>
+        // Извлекаем поисковый запрос из параметра 'q' в URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const userQuery = urlParams.get('q');
+        
+        // Если запрос получен, перенаправляем на you.com
+        if (userQuery) {
+            // Кодируем запрос для безопасной передачи в URL
+            const encodedQuery = encodeURIComponent(userQuery);
+            window.location.href = `https://you.com/search?q=${encodedQuery}`;
+        } else {
+            // Если запроса нет, показываем сообщение
+            document.body.innerHTML = '<p>Ошибка: поисковый запрос не указан.</p>';
+        }
+    </script>
+</head>
+<body>
+    <p>Перенаправление...</p>
+</body>
+</html>

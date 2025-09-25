@@ -2,7 +2,7 @@ html
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Финал! Подготовка запроса для You.com Chat AI (Профит-Лига Победит!)</title>
+    <title>Финал! Автоматический запрос в You.com AI (Профит-Лига Победит!)</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -20,7 +20,6 @@ html
         <h1>Подготовка запроса для AI...</h1>
         <div class="loading-animation"></div>
         <p>Мы загружаем вашу базу знаний и формируем умный запрос для You.com Chat AI.</p>
-        <p>Пожалуйста, подождите немного.</p>
         <p>Ваш вопрос: <strong id="userQueryDisplay">Загрузка...</strong></p>
         <p class="error-message" id="errorMessage" style="display: none;"></p>
     </div>
@@ -30,47 +29,66 @@ html
             const urlParams = new URLSearchParams(window.location.search);
             const userQuery = urlParams.get('q'); // Вопрос пользователя из Заботикса
             
-            // !!!ВОТ СЮДА ВСТАВЛЕНА ТВОЯ ПРОВЕРЕННАЯ ССЫЛКА НА ТВОЙ ФАЙЛ TXT НА GITHUB PAGES!!!
             const articleFilePath = 'https://polinasunko24-cmd.github.io/search-redirect/article_for_demo.txt.txt';
+            const youComChatUrl = 'https://you.com/chat'; // Целевой URL You.com Chat
 
             document.getElementById('userQueryDisplay').textContent = userQuery || 'Не указан';
 
-            if (userQuery) {
-                fetch(articleFilePath)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Ошибка загрузки статьи: ${response.status}`);
-                        }
-                        return response.text();
-                    })
-                    .then(articleText => {
-                        // Обрабатываем и сокращаем текст (до 3500 символов, You.com Chat должен его принять)
-                        articleText = articleText.substring(0, 3500);
-                        articleText = articleText.replace(/(\n\s*){2,}/g, '\n').trim();
-                        articleText = articleText.replace(/\s\s+/g, ' ');
-
-                        // Формируем окончательный запрос для You.com Chat-бота с четкой инструкцией
-                        const finalPrompt = `Используй следующий контекст: "${articleText}". Теперь, основываясь ТОЛЬКО на этом контексте, дай развёрнутый и умный ответ на вопрос: "${userQuery}". Если предоставленный контекст не содержит информации для ответа, скажи: "Извините, в предоставленной базе знаний я не нашел информации по вашему запросу."`;
-                        
-                        const youComChatUrl = `https://you.com/chat?q=${encodeURIComponent(finalPrompt)}`;
-                        window.location.replace(youComChatUrl);
-
-                    })
-                    .catch(error => {
-                        console.error('Ошибка при чтении статьи:', error);
-                        document.getElementById('errorMessage').textContent = 'Извините, произошла ошибка при загрузке или обработке базы знаний. AI ответит только на ваш вопрос (без контекста).';
-                        document.getElementById('errorMessage').style.display = 'block';
-                        setTimeout(() => {
-                            window.location.replace(`https://you.com/chat?q=${encodeURIComponent(userQuery)}`);
-                        }, 3000); // Перенаправляем с вопросом в чат через 3 секунды
-                    });
-            } else {
+            if (!userQuery) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('mainTitle').textContent = 'Ошибка!';
                 document.getElementById('errorMessage').textContent = 'Вопрос пользователя не был передан. Перенаправление на You.com Chat...';
                 document.getElementById('errorMessage').style.display = 'block';
-                setTimeout(() => {
-                    window.location.replace('https://you.com/chat'); // На главную страницу чата
+                setTimeout(() => {window.location.replace(youComChatUrl);
                 }, 3000);
+                return;
             }
+
+            fetch(articleFilePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка загрузки статьи: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(articleText => {
+                    // Обрабатываем и сокращаем текст (до 3500 символов)
+                    articleText = articleText.substring(0, 3500);
+                    articleText = articleText.replace(/(\n\s*){2,}/g, '\n').trim();
+                    articleText = articleText.replace(/\s\s+/g, ' ');
+
+                    // Формируем окончательный prompt для You.com Chat-бота
+                    const finalPrompt = `Прочитай следующий контекст: "${articleText}". Теперь, основываясь ТОЛЬКО на этом контексте, дай развёрнутый и умный ответ на вопрос: "${userQuery}". Если контекст не содержит информации для ответа, скажи, что не нашёл информацию именно в предоставленном контексте.`;
+                    
+                    // --- НОВАЯ ЛОГИКА: СОЗДАНИЕ И ОТПРАВКА СКРЫТОЙ ФОРМЫ ---
+                    const form = document.createElement('form');
+                    form.method = 'POST'; // Метод POST
+                    form.action = youComChatUrl; // Целевой URL
+                    form.target = '_self'; // Открываем в текущем окне/вкладке
+
+                    // Создаем скрытое поле ввода для нашего запроса
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'q'; // Имя поля, которое You.com может ожидать (чаще всего 'q' или 'text')
+                    input.value = finalPrompt;
+
+                    form.appendChild(input); // Добавляем поле в форму
+                    document.body.appendChild(form); // Добавляем форму в DOM
+
+                    form.submit(); // Отправляем форму автоматически!
+                    // --- КОНЕЦ НОВОЙ ЛОГИКИ ---
+
+                })
+                .catch(error => {
+                    console.error('Ошибка при чтении статьи:', error);
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    document.getElementById('mainTitle').textContent = 'Ошибка!';
+                    document.getElementById('errorMessage').textContent = 'Не удалось загрузить или обработать базу знаний. Попытка перейти в You.com Chat без контекста.';
+                    document.getElementById('errorMessage').style.display = 'block';
+                    setTimeout(() => {
+                        window.location.replace(`${youComChatUrl}?q=${encodeURIComponent(userQuery)}`); //Fallback на GET
+                    }, 3000);
+                });
         });
     </script>
 </body>

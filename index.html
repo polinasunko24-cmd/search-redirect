@@ -1,24 +1,107 @@
+html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Перенаправление на поиск</title>
-    <script>
-        // Извлекаем поисковый запрос из параметра 'q' в URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const userQuery = urlParams.get('q');
-        
-        // Если запрос получен, перенаправляем на you.com
-        if (userQuery) {
-            // Кодируем запрос для безопасной передачи в URL
-            const encodedQuery = encodeURIComponent(userQuery);
-            window.location.href = `https://you.com/search?q=${encodedQuery}`;
-        } else {
-            // Если запроса нет, показываем сообщение
-            document.body.innerHTML = '<p>Ошибка: поисковый запрос не указан.</p>';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перехватчик Запросов для AI (Профит-Лига Вперёд!)</title>
+    <!-- Здесь можно добавить любые стили, если ты захочешь сделать страницу красивее -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
         }
-    </script>
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 50px auto;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        .loading-text {
+            font-style: italic;
+            color: #666;
+        }
+        .error-message {
+            color: #d9534f;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <p>Перенаправление...</p>
+    <div class="container">
+        <h1>Подготовка запроса для AI...</h1>
+        <p class="loading-text">Мы загружаем вашу базу знаний и формируем умный запрос для You.com.</p>
+        <p>Пожалуйста, подождите немного.</p>
+        <p>Ваш вопрос: <strong id="userQueryDisplay">Загрузка...</strong></p>
+        <p>Путь к базе знаний: <code id="articlePathDisplay">Загрузка...</code></p>
+        <p class="error-message" id="errorMessage" style="display: none;"></p>
+    </div>
+
+    <!-- === НАЧАЛО БЛОКА СКРИПТА (МОЗГ ПЕРЕХВАТЧИКА) === -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userQuery = urlParams.get('q'); // Вопрос пользователя из Заботикса
+
+            // !!! ВАЖНО: ВСТАВЬ СЮДА ПРЯМУЮ ССЫЛКУ НА ТВОЙ ФАЙЛ TXT НА GITHUB PAGES !!!
+            // Пример: 'https://polinasunko24-cmd.github.io/article_for_demo.txt'
+            const articleFilePath = 'https://polinasunko24-cmd.github.io/article_for_demo.txt'; // <-- ЗАМЕНИ ЭТОЙ ССЫЛКОЙ !!!
+
+            // Обновляем дисплей (для обратной связи пользователю)
+            document.getElementById('userQueryDisplay').textContent = userQuery || 'Не указан';
+            document.getElementById('articlePathDisplay').textContent = articleFilePath;
+
+            if (userQuery) {
+                // Шаг 1: Загружаем текст статьи с твоего же GitHub Pages
+                fetch(articleFilePath)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Ошибка загрузки статьи: ${response.status}`);
+                        }
+                        return response.text(); // Читаем как обычный текст
+                    })
+                    .then(articleText => {
+                        // Шаг 2: Обрабатываем и сокращаем текст (чтобы You.com не "задохнулся" от объема)
+                        articleText = articleText.substring(0, 3500); // Ограничиваем до 3500 символов
+                        articleText = articleText.replace(/(\n\s*){2,}/g, '\n').trim(); // Убираем лишние переносы строк
+                        articleText = articleText.replace(/\s\s+/g, ' '); // Заменяем множественные пробелы на один
+
+                        // Шаг 3: Формируем окончательный запрос для You.com
+                        // Добавляем инструкцию для AI, чтобы он основывался на контексте
+                        const finalPrompt = `Прочитай следующий контекст: "${articleText}". Теперь, основываясь ТОЛЬКО на этом контексте, ответь на вопрос: "${userQuery}". Если контекст не содержит информации для ответа, скажи, что не нашёл информацию.`;
+                        
+                        // Шаг 4: Перенаправляем на You.com с полным запросом
+                        const youComUrl = `https://you.com/search?q=${encodeURIComponent(finalPrompt)}`;
+                        window.location.replace(youComUrl);
+
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при чтении статьи или перенаправлении:', error);
+                        document.getElementById('errorMessage').textContent = 'Произошла ошибка при загрузке или обработке базы знаний. AI ответит только на ваш вопрос.';
+                        document.getElementById('errorMessage').style.display = 'block';
+                        // Задержка перед перенаправлением, чтобы пользователь успел прочитать ошибку
+                        setTimeout(() => {
+                            window.location.replace(`https://you.com/search?q=${encodeURIComponent(userQuery)}`);
+                        }, 3000); // Перенаправляем через 3 секунды
+                    });
+            } else {
+                // Если нет вопроса, перенаправляем на главную You.com
+                document.getElementById('errorMessage').textContent = 'Вопрос пользователя не был передан. Перенаправление на You.com...';
+                document.getElementById('errorMessage').style.display = 'block';
+                setTimeout(() => {
+                    window.location.replace('https://you.com/');
+                }, 3000);
+            }
+        });
+    </script>
+    <!-- === КОНЕЦ БЛОКА СКРИПТА === -->
 </body>
 </html>

@@ -51,9 +51,8 @@ html
             const urlParams = new URLSearchParams(window.location.search);
             const userQuery = urlParams.get('q'); // Вопрос пользователя из Заботикса
 
-            // !!! ВАЖНО: ВСТАВЬ СЮДА ПРЯМУЮ ССЫЛКУ НА ТВОЙ ФАЙЛ TXT НА GITHUB PAGES !!!
-            // Пример: 'https://polinasunko24-cmd.github.io/article_for_demo.txt'
-            const articleFilePath = 'https://polinasunko24-cmd.github.io/article_for_demo.txt'; // <-- ЗАМЕНИ ЭТОЙ ССЫЛКОЙ !!!
+            // !!! ТВОЯ ПРЯМАЯ ССЫЛКА НА ТВОЙ ФАЙЛ TXT НА GITHUB PAGES !!!
+            const articleFilePath = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/refs/heads/main/article_for_demo.txt.txt';
 
             // Обновляем дисплей (для обратной связи пользователю)
             document.getElementById('userQueryDisplay').textContent = userQuery || 'Не указан';
@@ -75,7 +74,6 @@ html
                         articleText = articleText.replace(/\s\s+/g, ' '); // Заменяем множественные пробелы на один
 
                         // Шаг 3: Формируем окончательный запрос для You.com
-                        // Добавляем инструкцию для AI, чтобы он основывался на контексте
                         const finalPrompt = `Прочитай следующий контекст: "${articleText}". Теперь, основываясь ТОЛЬКО на этом контексте, ответь на вопрос: "${userQuery}". Если контекст не содержит информации для ответа, скажи, что не нашёл информацию.`;
                         
                         // Шаг 4: Перенаправляем на You.com с полным запросом

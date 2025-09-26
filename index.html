@@ -1,93 +1,161 @@
-html
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Финал! Автоматический запрос в You.com AI (Профит-Лига Победит!)</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ответ от AI</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; background-color: #f0f2f5; color: #333; }
-        .container { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 600px; margin: 50px auto; }
-        h1 { color: #007bff; }
-        p { margin: 10px 0; }
-        .loading-animation { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error-message { color: #dc3545; font-weight: bold; background-color: #f8d7da; padding: 10px; border-radius: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        #loadingSpinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            display: none; /* Скрыт по умолчанию */
+            margin: 30px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #answerContainer {
+            margin-top: 20px;
+            text-align: left;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        #aiAnswer {
+            white-space: pre-wrap; /* Сохраняет форматирование абзацев */
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+        }
+        #userQuestion {
+            font-style: italic;
+            color: #777;
+            margin-bottom: 15px;
+        }
+        #errorMessage {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Подготовка запроса для AI...</h1>
-        <div class="loading-animation"></div>
-        <p>Мы загружаем вашу базу знаний и формируем умный запрос для You.com Chat AI.</p>
-        <p>Ваш вопрос: <strong id="userQueryDisplay">Загрузка...</strong></p>
-        <p class="error-message" id="errorMessage" style="display: none;"></p>
+        <h1 id="mainTitle">Получение ответа от AI...</h1>
+        <div id="loadingSpinner"></div>
+        <p id="userQuestion" style="display: none;"></p>
+        <div id="answerContainer" style="display: none;">
+            <h2>Ответ AI:</h2>
+            <p id="aiAnswer"></p>
+        </div>
+        <p id="errorMessage"></p>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userQuery = urlParams.get('q'); // Вопрос пользователя из Заботикса
-            
-            const articleFilePath = 'https://polinasunko24-cmd.github.io/search-redirect/article_for_demo.txt.txt';
-            const youComChatUrl = 'https://you.com/chat'; // Целевой URL You.com Chat
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const mainTitle = document.getElementById('mainTitle');
+            const userQuestionElem = document.getElementById('userQuestion');
+            const answerContainer = document.getElementById('answerContainer');
+            const aiAnswerElem = document.getElementById('aiAnswer');
+            const errorMessageElem = document.getElementById('errorMessage');
 
-            document.getElementById('userQueryDisplay').textContent = userQuery || 'Не указан';
+            loadingSpinner.style.display = 'block'; // Показываем спиннер сразу
+
+            // --- ЭТО ТВОЯ ССЫЛКА НА "Секретаря" на Яндекс.Облаке! ---
+            const yandexCloudFunctionUrl = 'https://functions.yandexcloud.net/d4e3iuogjmrv7uqiou4q';
+            // --- ЭТО ПУБЛИЧНАЯ ССЫЛКА НА ТВОЙ "Архив" (базу знаний .txt) на GitHub Pages ---
+            const knowledgeBaseUrl = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/refs/heads/main/article_for_demo.txt.txt'; // <-- ТВОЯ ССЫЛКА ЗДЕСЬ!
+
+            // Получаем параметры из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const userQuery = urlParams.get('query'); // Это твой вопрос из Заботикса
 
             if (!userQuery) {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                document.getElementById('mainTitle').textContent = 'Ошибка!';
-                document.getElementById('errorMessage').textContent = 'Вопрос пользователя не был передан. Перенаправление на You.com Chat...';
-                document.getElementById('errorMessage').style.display = 'block';
-                setTimeout(() => {window.location.replace(youComChatUrl);
-                }, 3000);
+                loadingSpinner.style.display = 'none';
+                mainTitle.textContent = 'Ошибка!';
+                errorMessageElem.textContent = 'Не удалось найти вопрос в URL. Пожалуйста, убедитесь, что ссылка сформирована правильно (формат: ?query=ВОПРОС).';
+                errorMessageElem.style.display = 'block';
                 return;
             }
 
-            fetch(articleFilePath)
+            userQuestionElem.textContent = `Ваш вопрос: "${decodeURIComponent(userQuery)}"`;
+            userQuestionElem.style.display = 'block';
+
+            // Шаг 1: Читаем базу знаний с GitHub Pages ("Архив")
+            fetch(knowledgeBaseUrl)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`Ошибка загрузки статьи: ${response.status}`);
+                        throw new Error(`HTTP error! Status: ${response.status} при загрузке базы знаний. Проверьте ссылку на Archive.`);
                     }
                     return response.text();
                 })
                 .then(articleText => {
-                    // Обрабатываем и сокращаем текст (до 3500 символов)
-                    articleText = articleText.substring(0, 3500);
-                    articleText = articleText.replace(/(\n\s*){2,}/g, '\n').trim();
-                    articleText = articleText.replace(/\s\s+/g, ' ');
+                    // Шаг 2: Отправляем запрос на твой Яндекс.Облачный прокси ("Секретарь")
+                    return fetch(yandexCloudFunctionUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userQuery: decodeURIComponent(userQuery), // Декодируем, если вопрос был закодирован в URL
+                            articleText: articleText
+                        })
+                    });
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка от AI-сервера: ${response.statusText || 'Неизвестная ошибка'}. Возможно, некорректно настроен API Gateway или функция Яндекс.Облака.`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingSpinner.style.display = 'none';
+                    mainTitle.textContent = 'Готово!';
 
-                    // Формируем окончательный prompt для You.com Chat-бота
-                    const finalPrompt = `Прочитай следующий контекст: "${articleText}". Теперь, основываясь ТОЛЬКО на этом контексте, дай развёрнутый и умный ответ на вопрос: "${userQuery}". Если контекст не содержит информации для ответа, скажи, что не нашёл информацию именно в предоставленном контексте.`;
-                    
-                    // --- НОВАЯ ЛОГИКА: СОЗДАНИЕ И ОТПРАВКА СКРЫТОЙ ФОРМЫ ---
-                    const form = document.createElement('form');
-                    form.method = 'POST'; // Метод POST
-                    form.action = youComChatUrl; // Целевой URL
-                    form.target = '_self'; // Открываем в текущем окне/вкладке
-
-                    // Создаем скрытое поле ввода для нашего запроса
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'q'; // Имя поля, которое You.com может ожидать (чаще всего 'q' или 'text')
-                    input.value = finalPrompt;
-
-                    form.appendChild(input); // Добавляем поле в форму
-                    document.body.appendChild(form); // Добавляем форму в DOM
-
-                    form.submit(); // Отправляем форму автоматически!
-                    // --- КОНЕЦ НОВОЙ ЛОГИКИ ---
-
+                    if (data.answer) {
+                        aiAnswerElem.textContent = data.answer;
+                        answerContainer.style.display = 'block';
+                    } else {
+                        throw new Error('Ответ AI пуст или имеет неверный формат. Проверьте логи на Яндекс.Облаке.');
+                    }
                 })
                 .catch(error => {
-                    console.error('Ошибка при чтении статьи:', error);
-                    document.getElementById('loadingSpinner').style.display = 'none';
-                    document.getElementById('mainTitle').textContent = 'Ошибка!';
-                    document.getElementById('errorMessage').textContent = 'Не удалось загрузить или обработать базу знаний. Попытка перейти в You.com Chat без контекста.';
-                    document.getElementById('errorMessage').style.display = 'block';
-                    setTimeout(() => {
-                        window.location.replace(`${youComChatUrl}?q=${encodeURIComponent(userQuery)}`); //Fallback на GET
-                    }, 3000);
+                    console.error('Ошибка в процессе получения ответа:', error);
+                    loadingSpinner.style.display = 'none';
+                    mainTitle.textContent = 'Произошла ошибка!';
+                    errorMessageElem.textContent = `Что-то пошло не так: ${error.message}. Пожалуйста, попробуйте снова или проверьте настройки консоли разработчика в браузере (F12).`;
+                    errorMessageElem.style.display = 'block';
                 });
         });
     </script>

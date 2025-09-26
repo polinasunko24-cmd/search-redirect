@@ -92,10 +92,11 @@
 
             loadingSpinner.style.display = 'block'; // Показываем спиннер сразу
 
-            // --- ЭТО ТВОЯ ССЫЛКА НА "Секретаря" на Яндекс.Облаке! ---
-            const yandexCloudFunctionUrl = 'https://functions.yandexcloud.net/d4e3iuogjmrv7uqiou4q';
+            // --- ЭТО ПРАВИЛЬНАЯ ССЫЛКА НА ТВОЙ "Секретарь" на Яндекс.Облаке (ЧЕРЕЗ МАРШРУТ /proxy!) ---
+            const yandexCloudFunctionUrl = 'https://functions.yandexcloud.net/d4e3iuogjmrv7uqiou4q/proxy';
+            
             // --- ЭТО ПУБЛИЧНАЯ ССЫЛКА НА ТВОЙ "Архив" (базу знаний .txt) на GitHub Pages ---
-            const knowledgeBaseUrl = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/refs/heads/main/article_for_demo.txt.txt'; // <-- ТВОЯ ССЫЛКА ЗДЕСЬ!
+            const knowledgeBaseUrl = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/refs/heads/main/article_for_demo.txt.txt';
 
             // Получаем параметры из URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -122,6 +123,7 @@
                 })
                 .then(articleText => {
                     // Шаг 2: Отправляем запрос на твой Яндекс.Облачный прокси ("Секретарь")
+                    // Теперь это идет на маршрут /proxy, который сам обрабатывает CORS!
                     return fetch(yandexCloudFunctionUrl, {
                         method: 'POST',
                         headers: {
@@ -135,7 +137,7 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`Ошибка от AI-сервера: ${response.statusText || 'Неизвестная ошибка'}. Возможно, некорректно настроен API Gateway или функция Яндекс.Облака.`);
+                        throw new Error(`Ошибка от AI-сервера: ${response.statusText || 'Неизвестная ошибка'}. Возможно, некорректно настроена функция Яндекс.Облака, или она возвращает ошибку.`);
                     }
                     return response.json();
                 })
@@ -146,7 +148,12 @@
                     if (data.answer) {
                         aiAnswerElem.textContent = data.answer;
                         answerContainer.style.display = 'block';
-                    } else {
+                    } else if (data.error) {
+                         // Если функция вернула ошибку в JSON
+                        errorMessageElem.textContent = `Ошибка от AI-сервера: ${data.error}`;
+                        errorMessageElem.style.display = 'block';
+                    }
+                    else {
                         throw new Error('Ответ AI пуст или имеет неверный формат. Проверьте логи на Яндекс.Облаке.');
                     }
                 })

@@ -102,6 +102,10 @@
             const urlParams = new URLSearchParams(window.location.search);
             const userQuery = urlParams.get('query'); // Это твой вопрос из Заботикса
 
+    console.log("Полный URL из браузера:", window.location.href);
+    console.log("Параметры URL (для отладки):", urlParams);
+    console.log("userQuery, извлеченный из URL:", userQuery);
+    
             if (!userQuery) {
                 loadingSpinner.style.display = 'none';
                 mainTitle.textContent = 'Ошибка!';

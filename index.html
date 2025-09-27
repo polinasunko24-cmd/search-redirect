@@ -98,21 +98,28 @@
             // --- ЭТО ПУБЛИЧНАЯ ССЫЛКА НА ТВОЙ "Архив" (базу знаний .txt) на GitHub Pages ---
             const knowledgeBaseUrl = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/main/article_for_demo.txt.txt';
 
-            // Получаем параметры из URL
+                       // Получаем параметры из URL
             const urlParams = new URLSearchParams(window.location.search);
+
+            // --- НОВЫЕ КОНСОЛЬНЫЕ ВЫВОДЫ ДЛЯ ОТЛАДКИ ---
+            console.log("Полный URL из браузера:", window.location.href);
+            console.log("URL параметры (для отладки):", urlParams);
+            // --- КОНЕЦ НОВЫХ КОНСОЛЬНЫХ ВЫВОДОВ ---
+
             const userQuery = urlParams.get('query'); // Это твой вопрос из Заботикса
 
-    console.log("Полный URL из браузера:", window.location.href);
-    console.log("Параметры URL (для отладки):", urlParams);
-    console.log("userQuery, извлеченный из URL:", userQuery);
-    
+            // --- ЕЩЕ ОДИН КОНСОЛЬНЫЙ ВЫВОД ДЛЯ ОТЛАДКИ userQuery ---
+            console.log("userQuery, извлеченный из URL:", userQuery);
+            // --- КОНЕЦ КОНСОЛЬНОГО ВЫВОДА ---
+
             if (!userQuery) {
                 loadingSpinner.style.display = 'none';
                 mainTitle.textContent = 'Ошибка!';
                 errorMessageElem.textContent = 'Не удалось найти вопрос в URL. Пожалуйста, убедитесь, что ссылка сформирована правильно (формат: ?query=ВОПРОС).';
                 errorMessageElem.style.display = 'block';
-                return;
+                return; // Остановить выполнение, если вопроса нет
             }
+    
 
             userQuestionElem.textContent = `Ваш вопрос: "${decodeURIComponent(userQuery)}"`;
             userQuestionElem.style.display = 'block';

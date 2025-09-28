@@ -1,42 +1,61 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Перенаправление к AI</title>
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="cache-buster" content="1717887556789_FINAL_DEPLOY"> <!-- УНИКАЛЬНОЕ ЗНАЧЕНИЕ -->
-</head>
-<body>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Перенаправление к AI</title>
+        
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="0">
+        <meta name="cache-buster" content="1717887890123_REAL_ARTICLE_LOAD"> <!-- НОВЫЙ КЭШ-УБИЙЦА! -->
+    </head>
+    <body>
 
-    <h1>Обработка запроса...</h1>
-    <p>Ваш запрос сейчас обрабатывается AI. Вы будете перенаправлены...</p>
+        <h1>Обработка запроса...</h1>
+        <p>Ваш запрос сейчас обрабатывается AI. Вы будете перенаправлены...</p>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userQuery = urlParams.get('query');
-            
-            // --- АКТУАЛЬНЫЙ URL ТВОЕГО GOOGLE SCRIPT (ДОЛЖЕН ВЫДАВАТЬ ПРОСТО ТЕКСТ) ---
-            const GOOGLE_SCRIPT_RAW_ANSWER_URL = 'https://script.google.com/macros/s/AKfycbw2WkDQBi8AAir9JIRoCYwEbW0zW2dGqRrpyjajv2u-a8bqvaEc6FwSnXTziSlXWm4SNw/exec'; 
+        <p id="loadingStatus">Загрузка статьи и подготовка запроса...</p>
 
-            let redirectUrl = GOOGLE_SCRIPT_RAW_ANSWER_URL;
-
-            if (userQuery) {
-                const encodedUserQuery = encodeURIComponent(userQuery);
-                redirectUrl += `?query=${encodedUserQuery}&article=${encodeURIComponent("База_знаний_недоступна_через_фронтенд_GitHub")}`;
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const userQuery = urlParams.get('query');
                 
-                alert('>>> Перенаправление на Google Script для получения ответа...');
-                window.location.replace(redirectUrl);
-            } else {
-                alert('Ошибка: Отсутствует вопрос пользователя в URL. Невозможно перенаправить.');
-                document.body.innerHTML = '<h1>Ошибка: Отсутствует вопрос пользователя.</h1><p>Убедитесь, что Заботикс передает параметр "query".</p>';
-            }
-        });
-    </script>
+                // --- АКТУАЛЬНЫЙ URL ТВОЕГО GOOGLE SCRIPT (ДОЛЖЕН ВЫДАВАТЬ ПРОСТО ТЕКСТ) ---
+                const GOOGLE_SCRIPT_RAW_ANSWER_URL = 'https://script.google.com/macros/s/AKfycbw2WkDQBi8AAir9JIRoCYwEbW0zW2dGqRrpyjajv2u-a8bqvaEc6FwSnXTziSlXWm4SNw/exec';
 
-</body>
-</html>
+                if (!userQuery) {
+                    alert('Ошибка: Отсутствует вопрос пользователя в URL. Невозможно перенаправить.');
+                    document.body.innerHTML = '<h1>Ошибка: Отсутствует вопрос пользователя.</h1><p>Убедитесь, что Заботикс передает параметр "query".</p>';
+                    return;
+                }
+
+                document.getElementById('loadingStatus').innerText = 'Загрузка статьи для AI...';
+
+                // Загружаем статью с GitHub Pages
+                fetch('article_for_demo.txt.txt') // Убедись, что ПУТЬ ВЕРЕН!
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Не удалось загрузить статью: ${response.statusText}. Проверьте путь.`);
+                        }
+                        return response.text();
+                    })
+                    .then(articleContent => {
+                        document.getElementById('loadingStatus').innerText = 'Статья загружена. Перенаправление...';const encodedUserQuery = encodeURIComponent(userQuery);
+                        const encodedArticleText = encodeURIComponent(articleContent); // <<-- ВОТ ОН! РЕАЛЬНЫЙ АРТИКЛ!
+
+                        let redirectUrl = `${GOOGLE_SCRIPT_RAW_ANSWER_URL}?query=${encodedUserQuery}&article=${encodedArticleText}`;
+                        
+                        alert('>>> Перенаправление на Google Script для получения ответа...');
+                        window.location.replace(redirectUrl); // Перенаправляем!
+                    })
+                    .catch(error => {
+                        alert(`Критическая ошибка при загрузке статьи: ${error.message}`);
+                        document.body.innerHTML = `<h1>Критическая ошибка:</h1><p>Не удалось загрузить статью для AI: ${error.message}</p>`;
+                    });
+            });
+        </script>
+
+    </body>
+    </html>

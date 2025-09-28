@@ -92,25 +92,19 @@
 
             loadingSpinner.style.display = 'block'; // Показываем спиннер сразу
 
-            // --- ЭТО ПРАВИЛЬНАЯ ССЫЛКА НА ТВОЙ "Секретарь" на Яндекс.Облаке (ЧЕРЕЗ МАРШРУТ /proxy!) ---
-            const yandexCloudFunctionUrl = 'https://functions.yandexcloud.net/d4e3iuogjmrv7uqiou4q';
+            // --- ВОТ ЗДЕСЬ АДРЕС ТВОЕГО GOOGLE APPS SCRIPT! ---
+            const googleAppsScriptWebAppUrl = 'https://script.google.com/macros/s/AKfycbybNhIr_8Zx7X36gFgMt2DgVwV79nbfmztz4BdhbEQNxgMfgUeH3bF9s3zVgzK4TJSGag/exec'; // <--- ТВОЙ URL ИЗ GOOGLE!
             
             // --- ЭТО ПУБЛИЧНАЯ ССЫЛКА НА ТВОЙ "Архив" (базу знаний .txt) на GitHub Pages ---
-            const knowledgeBaseUrl = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/main/article_for_demo.txt.txt';
+            const knowledgeBaseUrl = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/main/article_for_demo.txt.txt'; // ТВОЙ ПРАВИЛЬНЫЙ URL К СТАТЬЕ!
 
-                       // Получаем параметры из URL
+            // Получаем параметры из URL
             const urlParams = new URLSearchParams(window.location.search);
-
-            // --- НОВЫЕ КОНСОЛЬНЫЕ ВЫВОДЫ ДЛЯ ОТЛАДКИ ---
             console.log("Полный URL из браузера:", window.location.href);
             console.log("URL параметры (для отладки):", urlParams);
-            // --- КОНЕЦ НОВЫХ КОНСОЛЬНЫХ ВЫВОДОВ ---
-
+            
             const userQuery = urlParams.get('query'); // Это твой вопрос из Заботикса
-
-            // --- ЕЩЕ ОДИН КОНСОЛЬНЫЙ ВЫВОД ДЛЯ ОТЛАДКИ userQuery ---
             console.log("userQuery, извлеченный из URL:", userQuery);
-            // --- КОНЕЦ КОНСОЛЬНОГО ВЫВОДА ---
 
             if (!userQuery) {
                 loadingSpinner.style.display = 'none';
@@ -119,7 +113,6 @@
                 errorMessageElem.style.display = 'block';
                 return; // Остановить выполнение, если вопроса нет
             }
-    
 
             userQuestionElem.textContent = `Ваш вопрос: "${decodeURIComponent(userQuery)}"`;
             userQuestionElem.style.display = 'block';
@@ -133,22 +126,21 @@
                     return response.text();
                 })
                 .then(articleText => {
-                    // Шаг 2: Отправляем запрос на твой Яндекс.Облачный прокси ("Секретарь")
-                    // Теперь это идет на маршрут /proxy, который сам обрабатывает CORS!
-                    return fetch(yandexCloudFunctionUrl, {
+                    // Шаг 2: Отправляем запрос НАПРЯМУЮ К GOOGLE APPS SCRIPT!
+                    return fetch(googleAppsScriptWebAppUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            userQuery: decodeURIComponent(userQuery), // Декодируем, если вопрос был закодирован в URL
+                            userQuery: decodeURIComponent(userQuery),
                             articleText: articleText
                         })
                     });
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`Ошибка от AI-сервера: ${response.statusText || 'Неизвестная ошибка'}. Возможно, некорректно настроена функция Яндекс.Облака, или она возвращает ошибку.`);
+                        throw new Error(`Ошибка от AI-сервера: ${response.statusText || 'Неизвестная ошибка'}. Возможно, некорректно настроен Google Apps Script, или он возвращает ошибку.`);
                     }
                     return response.json();
                 })
@@ -160,12 +152,10 @@
                         aiAnswerElem.textContent = data.answer;
                         answerContainer.style.display = 'block';
                     } else if (data.error) {
-                         // Если функция вернула ошибку в JSON
-                        errorMessageElem.textContent = `Ошибка от AI-сервера: ${data.error}`;
+                        errorMessageElem.textContent = `Ошибка от Google Apps Script: ${data.error}`;
                         errorMessageElem.style.display = 'block';
-                    }
-                    else {
-                        throw new Error('Ответ AI пуст или имеет неверный формат. Проверьте логи на Яндекс.Облаке.');
+                    } else {
+                        throw new Error('Ответ AI пуст или имеет неверный формат. Проверьте логи Google Apps Script.');
                     }
                 })
                 .catch(error => {

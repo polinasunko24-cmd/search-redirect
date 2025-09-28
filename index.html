@@ -1,43 +1,42 @@
-  <!DOCTYPE html>
-    <html lang="ru">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Перенаправление к AI</title>
-        
-        <!-- ВРЕМЕННЫЙ КЭШ-УБИЙЦА ДЛЯ HTML -->
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <meta http-equiv="Pragma" content="no-cache">
-        <meta http-equiv="Expires" content="0"><meta name="cache-buster" content="build_v_FINAL_ULTRA_MEGA_1">
-    </head>
-    <body>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перенаправление к AI</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="cache-buster" content="1717887556789_FINAL_DEPLOY"> <!-- УНИКАЛЬНОЕ ЗНАЧЕНИЕ -->
+</head>
+<body>
 
-        <h1>Обработка запроса...</h1>
-        <p>Ваш запрос сейчас обрабатывается AI. Вы будете перенаправлены.</p>
+    <h1>Обработка запроса...</h1>
+    <p>Ваш запрос сейчас обрабатывается AI. Вы будете перенаправлены...</p>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const userQuery = urlParams.get('query');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userQuery = urlParams.get('query');
+            
+            // --- АКТУАЛЬНЫЙ URL ТВОЕГО GOOGLE SCRIPT (ДОЛЖЕН ВЫДАВАТЬ ПРОСТО ТЕКСТ) ---
+            const GOOGLE_SCRIPT_RAW_ANSWER_URL = 'https://script.google.com/macros/s/AKfycbw2WkDQBi8AAir9JIRoCYwEbW0zW2dGqRrpyjajv2u-a8bqvaEc6FwSnXTziSlXWm4SNw/exec'; 
+
+            let redirectUrl = GOOGLE_SCRIPT_RAW_ANSWER_URL;
+
+            if (userQuery) {
+                const encodedUserQuery = encodeURIComponent(userQuery);
+                redirectUrl += `?query=${encodedUserQuery}&article=${encodeURIComponent("База_знаний_недоступна_через_фронтенд_GitHub")}`;
                 
-                // --- АКТУАЛЬНЫЙ URL ТВОЕГО GOOGLE SCRIPT (ДОЛЖЕН ВЫДАВАТЬ ПРОСТО ТЕКСТ) ---
-                const GOOGLE_SCRIPT_RAW_ANSWER_URL = 'https://script.google.com/macros/s/AKfycbymjD-NkZ408_tQxf7Sq8-rTpY0zOhKEKnu1scStjSCMVTA1mqMEon6D-Ctb4tIobvsFg/exec'; // ВСТАВЬ СВОЙ НОВЫЙ URL!
+                alert('>>> Перенаправление на Google Script для получения ответа...');
+                window.location.replace(redirectUrl);
+            } else {
+                alert('Ошибка: Отсутствует вопрос пользователя в URL. Невозможно перенаправить.');
+                document.body.innerHTML = '<h1>Ошибка: Отсутствует вопрос пользователя.</h1><p>Убедитесь, что Заботикс передает параметр "query".</p>';
+            }
+        });
+    </script>
 
-                let redirectUrl = GOOGLE_SCRIPT_RAW_ANSWER_URL;
-
-                if (userQuery) {
-                    const encodedUserQuery = encodeURIComponent(userQuery);
-                    // Мы не можем передать articleText без загрузки, поэтому AI будет отвечать без контекста
-                    redirectUrl += `?query=${encodedUserQuery}&article=${encodeURIComponent("База_знаний_недоступна_через_фронтенд_GitHub")}`;
-                    
-                    alert('>>> Перенаправление на Google Script для получения ответа...');
-                    window.location.replace(redirectUrl); // Это немедленно перенаправит страницу
-                } else {
-                    alert('Ошибка: Отсутствует вопрос пользователя в URL. Невозможно перенаправить.');
-                    document.body.innerHTML = '<h1>Ошибка: Отсутствует вопрос пользователя.</h1><p>Убедитесь, что Заботикс передает параметр "query".</p>';
-                }
-            });
-        </script>
-
-    </body>
-    </html>
+</body>
+</html>

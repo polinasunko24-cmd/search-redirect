@@ -1,146 +1,108 @@
 <!DOCTYPE html>
-    <html lang="ru">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Диагностика AI Запроса</title>
-        
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <meta http-equiv="Pragma" content="no-cache">
-        <meta http-equiv="Expires" content="0">
-        <meta name="cache-buster" content="1717888999123_DIAG_BUILD">
-        
-        <style>
-            body { font-family: sans-serif; margin: 20px; background-color: #f0f0f0; }
-            h1 { color: #333; }
-            p { color: #555; }
-            .status-message { font-weight: bold; color: #007bff; margin-top: 10px;}
-            .error-message { color: #dc3545; }
-            .debug-info { background-color: #e9ecef; border: 1px dashed #adb5bd; padding: 10px; margin-top: 15px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap; word-break: break-all; }
-        </style>
-    </head>
-    <body>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI ЗАПУЩЕН! (ПРОВЕРКА)</title>
+    
+    <!-- КЭШ-УБИЙЦЫ НА ВСЕ СЛУЧАИ ЖИЗНИ. ИЗМЕНИ КАЖДЫЙ РАЗ, ЕСЛИ НЕ ОБНОВИЛОСЬ -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="cache-buster-html" content="1717895000000_ULTRA_MEGA_KILL_V2"> <!-- ИЗМЕНИ ЭТО, ЕСЛИ НЕ ОБНОВИЛОСЬ -->
+    
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 20px; background-color: #333; color: #eee; text-align: center; }
+        .container { background-color: #222; border: 2px solid #5f5; padding: 30px; border-radius: 10px; max-width: 600px; margin: 50px auto; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+        h1 { color: #5f5; font-size: 2em; }
+        p { font-size: 1.1em; }
+        #status-display { font-weight: bold; color: #0f0; margin-top: 20px; border: 1px dashed #0f0; padding: 10px; background-color: #1a1a1a; }
+        .error-message { color: #f55; }
+        a { color: #5af; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
 
-        <h1>Диагностика запроса к AI</h1>
-        <p>Сейчас мы проверим каждый шаг, Генерал. Никаких перенаправлений, пока не убедимся в успешности.</p>
-        <p id="userQuestionDisplay"></p>
-        <p class="status-message" id="currentStatus">Запуск диагностики...</p>
-        
-        <div class="debug-info">
-            <h2>Отладочная информация:</h2>
-            <p><strong>Шаг 1:</strong> Извлечение параметров из URL...</p>
-            <p id="debugUserQuery"></p>
-            <p><strong>Шаг 2:</strong> Загрузка файла <code>article_for_demo.txt.txt</code>...</p>
-            <p id="debugArticleStatus"></p>
-            <p id="debugArticleContent"></p>
-            <p><strong>Шаг 3:</strong> Формирование контекста для AI...</p>
-            <p id="debugAIVariables"></p>
-            <p><strong>Шаг 4:</strong> Результат эмуляции запроса к Google Script...</p>
-            <p id="debugGoogleScriptResponse"></p>
-        </div>
+    <div class="container">
+        <h1>СТРАНИЦА AI ЗАПУЩЕНА И РАБОТАЕТ!</h1>
+        <p>Если вы это видите, значит HTML загрузился успешно.</p>
+        <p id="status-display">Запуск JS и подготовка к запросу...</p>
+    </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const userQuery = urlParams.get('query');
-                
-                // --- АКТУАЛЬНЫЙ URL ТВОЕГО GOOGLE SCRIPT (ДОЛЖЕН ВЫДАВАТЬ ПРОСТО ТЕКСТ) ---
-                const GOOGLE_SCRIPT_RAW_ANSWER_URL = 'https://script.google.com/macros/s/AKfycby-Z_vjIFKzVySfFi-ltesSUJB82JSbqnoFtRB6vd0zDbsonIbW4soocxI-AUgiCUwevQ/exec';
+    <!-- ************************************************************************* -->
+    <!-- ВЕСЬ JAVASCRIPT-КОД "ГОНЦА". -->
+    <!-- ************************************************************************* -->
+    <script>
+        // АКТУАЛЬНЫЙ URL ТВОЕГО GOOGLE SCRIPT (ДОЛЖЕН ВЫДАВАТЬ ПРОСТО ТЕКСТ)
+        const GOOGLE_SCRIPT_RAW_ANSWER_URL = 'https://script.google.com/macros/s/AKfycbw2WkDQBi8AAir9JIRoCYwEbW0zW2dGqRrpyjajv2u-a8bqvaEc6FwSnXTziSlXWm4SNw/exec';
 
-                document.getElementById('userQuestionDisplay').innerHTML = `<strong>Ваш вопрос:</strong>"${userQuery || 'Не задан'}"`;
-                document.getElementById('debugUserQuery').innerHTML = `<strong><code>userQuery</code> из URL:</strong> <code>${userQuery || '[НЕ НАЙДЕН]'}</code>`;
+        // Обновляет статус на странице
+        function updateStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status-display');
+            if (statusDiv) {
+                statusDiv.innerHTML = message;
+                statusDiv.className = isError ? 'error-message' : '';
+            }
+        }
 
-                if (!userQuery) {
-                    document.getElementById('currentStatus').className = 'error-message';
-                    document.getElementById('currentStatus').innerText = 'Ошибка: Отсутствует вопрос пользователя в URL. Сбой диагностики.';
-                    return;
-                }
+        // Запуск логики после загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus("JS ЗАПУЩЕН! Читаем URL параметры...");
 
-                document.getElementById('currentStatus').innerText = 'Загрузка файла article_for_demo.txt.txt...';
+            const urlParams = new URLSearchParams(window.location.search);
+            const userQuery = urlParams.get('query');
+            
+            if (!userQuery) {
+                updateStatus('Ошибка: Отсутствует userQuery в URL.', true);
+                return;
+            }
 
-                // Загружаем полную статью с GitHub Pages
-                fetch('article_for_demo.txt.txt') // Убедись, что ПУТЬ ЗАГРУЗКИ К article_for_demo.txt.txt ВЕРЕН!
-                    .then(response => {
-                        document.getElementById('debugArticleStatus').innerHTML = `Статус загрузки: <code>${response.status} ${response.statusText}</code>`;
-                        if (!response.ok) {
-                            throw new Error(`Не удалось загрузить статью со статусом ${response.status}: ${response.statusText}.`);
+            updateStatus(`UserQuery: "${userQuery}". Загружаем статью...`);
+
+            // Загружаем полную статью с GitHub Pages
+            fetch('article_for_demo.txt.txt') // Убедись, что ПУТЬ ЗАГРУЗКИ К article_for_demo.txt.txt ВЕРЕН!
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Статус: ${response.status} ${response.statusText}. Проверьте путь article_for_demo.txt.txt.`);
+                    }
+                    return response.text();
+                })
+                .then(fullArticleContent => {
+                    updateStatus('Статья загружена. Формируем контекст...');
+                    
+                    const sentences = fullArticleContent.split(/[\.\?!;]\s*|\r?\n\s*/).filter(s => s.trim().length > 0);
+                    const queryKeywords = userQuery.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+
+                    let relevantContext = [];
+                    for (const sentence of sentences) {
+                        const lowerSentence = sentence.toLowerCase();
+                        if (queryKeywords.some(keyword => lowerSentence.includes(keyword))) {
+                            relevantContext.push(sentence.trim());
+                            if (relevantContext.length >= 3) break;
                         }
-                        return response.text();
-                    })
-                    .then(fullArticleContent => {
-                        document.getElementById('currentStatus').innerText = 'Статья загружена. Формирование контекста для AI...';
-                        document.getElementById('debugArticleContent').innerHTML = `<strong>Содержимое <code>article_for_demo.txt.txt</code> (первые 500 символов):</strong> <pre>${fullArticleContent.substring(0, 500)}...</pre>`;
-                        
-                        // --- ЛОГИКА: Извлечение релевантных предложений ВО ФРОНТЕНДЕ ---
-                        const sentences = fullArticleContent.split(/[\.\?!;]\s*|\r?\n\s*/).filter(s => s.trim().length > 0);
-                        const queryKeywords = userQuery.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+                    }
+                    let articleForAI = relevantContext.join(" ") || fullArticleContent.substring(0, 300);
+                    if (articleForAI.length > 1000) {
+                        articleForAI = articleForAI.substring(0, 1000) + "...";
+                    }
 
-                        let relevantContext = [];
-                        for (const sentence of sentences) {
-                            const lowerSentence = sentence.toLowerCase();
-                            if (queryKeywords.some(keyword => lowerSentence.includes(keyword))) {
-                                relevantContext.push(sentence.trim());
-                                if (relevantContext.length >= 3) break;
-                            }
-                        }
-                        let articleForAI = relevantContext.join(" ") || fullArticleContent.substring(0, 300);
-                        if (articleForAI.length > 1000) {
-                            articleForAI = articleForAI.substring(0, 1000) + "...";
-                        }
-                        // --- КОНЕЦ ЛОГИКИ ИЗВЛЕЧЕНИЯ КОНТЕКСТА ---
+                    updateStatus('Контекст сформирован. Перенаправляем на Google Script...');
 
-                        document.getElementById('debugAIVariables').innerHTML = `
-                            <strong>Контекст для AI (<code>articleForAI</code>, первые 500 символов):</strong> <pre>${articleForAI.substring(0, 500)}...</pre>
-                        `;
+                    const encodedUserQuery = encodeURIComponent(userQuery);
+                    const encodedArticleForAI = encodeURIComponent(articleForAI);
 
-                        // Эмуляция запроса к Google Script (без перенаправления)
-                        document.getElementById('currentStatus').innerText = 'Эмуляция запроса к Google Script (без перенаправления)...';
-                        const encodedUserQuery = encodeURIComponent(userQuery);
-                        const encodedArticleForAI = encodeURIComponent(articleForAI);
+                    let redirectUrl = `${GOOGLE_SCRIPT_RAW_ANSWER_URL}?query=${encodedUserQuery}&article=${encodedArticleForAI}`;
+                    
+                    // console.log("Final redirect URL:", redirectUrl); // Для отладки в консоли
+                    window.location.replace(redirectUrl); // Это немедленно перенаправит страницу
+                })
+                .catch(error => {
+                    updateStatus(`КРИТИЧЕСКАЯ ОШИБКА: Не удалось загрузить статью: ${error.message}. Проверьте <a href="article_for_demo.txt.txt" target="_blank">файл статьи</a>.`, true);
+                });
+        });
+    </script>
+    <!-- ************************************************************************* -->
 
-                        let emulatedGoogleScriptUrl = `${GOOGLE_SCRIPT_RAW_ANSWER_URL}?query=${encodedUserQuery}&article=${encodedArticleForAI}`;
-                        document.getElementById('debugGoogleScriptResponse').innerHTML = `
-                            <strong>Эмулируемая полная URL Google Script:</strong> <pre>${emulatedGoogleScriptUrl}</pre>
-                            <strong>Попытка получения ответа (не перенаправляемся!)...</strong>
-                        `;
-
-                        // Теперь мы НЕ перенаправляемся, а ДЕЛАЕМ FETCH ЗАПРОС, чтобы увидеть ответ на этой же странице
-                        // ЭТО МОДЕЛИРУЕТ, КАК ЕСЛИ БЫ БЫЛ РЕДИРЕКТ, НО ПОЗВОЛЯЕТ ОСТАВАТЬСЯ НА СТРАНИЦЕ ДЛЯ АНАЛИЗА
-                        fetch(emulatedGoogleScriptUrl)
-                            .then(googleResponse => {
-                                if (!googleResponse.ok) {
-                                    throw new Error(`Google Script вернул ошибку: ${googleResponse.status} ${googleResponse.statusText}`);
-                                }
-                                return googleResponse.text();
-                            })
-                            .then(googleTextResponse => {
-                                document.getElementById('currentStatus').innerText = 'Диагностика завершена. Ответ от Google Script получен.';
-                                document.getElementById('currentStatus').style.color = '#28a745'; // Зеленый цвет успеха
-                                document.getElementById('debugGoogleScriptResponse').innerHTML += `
-                                    <p><strong>Ответ от Google Script:</strong></p>
-                                    <pre>${googleTextResponse}</pre>
-                                    <p>Если это выглядит как JSON (`{"answer":"..."}`), но должен быть просто текст — значит, Google Script настроен НЕВЕРНО (возвращает JSONP или JSON).</p>
-                                `;
-                            })
-                            .catch(googleError => {
-                                document.getElementById('currentStatus').className = 'error-message';
-                                document.getElementById('currentStatus').innerText = `Критическая ошибка при запросе к Google Script: ${googleError.message}`;
-                                document.getElementById('debugGoogleScriptResponse').innerHTML += `
-                                    <p class="error-message"><strong>Ошибка при запросе к Google Script:</strong></p>
-                                    <pre class="error-message">${googleError.message}</pre>
-                                    <p class="error-message">Возможно, это снова CORS, блокировка сети или Google Script настроен неверно для возврата прямого текста.</p>
-                                `;
-                            });
-
-                    })
-                    .catch(error => {
-                        document.getElementById('currentStatus').className = 'error-message';
-                        document.getElementById('currentStatus').innerText = `Критическая ошибка при загрузке статьи: ${error.message}. Проверьте URL article_for_demo.txt.txt.`;
-                        document.getElementById('debugArticleStatus').className = 'error-message';
-                        document.getElementById('debugArticleStatus').innerHTML = `<strong>Ошибка загрузки article_for_demo.txt.txt:</strong> <pre>${error.message}</pre>`;
-                    });
-            });
-        </script>
-
-    </body>
-    </html>
+</body>
+</html>

@@ -1,71 +1,91 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ответ от AI</title>
-</head>
-<body>
+ <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Ответ от AI</title>
+    </head>
+    <body>
 
-    <div id="userQuestion" style="font-weight: bold; margin-bottom: 10px;"></div>
-    <div id="aiResponse" style="padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">Загрузка ответа от AI...</div>
+        <div id="userQuestion" style="font-weight: bold; margin-bottom: 10px;"></div>
+        <div id="aiResponse" style="padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">Загрузка ответа от AI...</div>
 
-    <script>
-        const GOOGLE_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymjD-NkZ408_tQxf7Sq8-rTpY0zOhKEKnu1scStjSCMVTA1mqMEon6D-Ctb4tIobvsFg/exec';
+        <script>
+            // --- ВНИМАНИЕ: МЫ УБРАЛИ КОНСТАНТУ И БУДЕМ ВСТАВЛЯТЬ URL НАПРЯМУЮ! ---
+            // URL Google Script будет передаваться как аргумент.
 
-        function displayAIResponse(message) {
-            const responseDiv = document.getElementById('aiResponse');
-            if (responseDiv) { responseDiv.innerHTML = message; }
-        }
+            function displayAIResponse(message) { // Эта функция только отображает
+                const responseDiv = document.getElementById('aiResponse');
+                if (responseDiv) {
+                    responseDiv.innerHTML = message;
+                }
+            }
 
-        function handleGoogleScriptResponse(data) {
-            alert('>>> handleGoogleScriptResponse ВЫЗВАНА! Получены данные: ' + JSON.stringify(data));
-            const oldScript = document.getElementById('googleScriptCall');
-            if (oldScript) { oldScript.remove(); }
-            if (data && data.error) { displayAIResponse(`Ошибка от AI: ${data.error}`); }
-            else if (data && data.answer) { displayAIResponse(data.answer); }
-            else { displayAIResponse('AI вернул непонятный ответ.'); }
-        }
-
-        function sendRequestToGoogleScript(userQuery, articleText) {
-            alert('>>> sendRequestToGoogleScript: НАЧАЛО ОТПРАВКИ ЗАПРОСА');
-            alert('>>> sendRequestToGoogleScript: userQuery: ' + userQuery);
-            alert('>>> sendRequestToGoogleScript: articleText (начало): ' + (articleText ? articleText.substring(0, 50) : '[пусто]'));
-            displayAIResponse('Загрузка ответа от AI...');
-            const encodedUserQuery = encodeURIComponent(userQuery);
-            const encodedArticleText = encodeURIComponent(articleText);
-            const script = document.createElement('script');
-            script.id = 'googleScriptCall';
-            script.src = `${GOOGLE_SCRIPT_WEB_APP_URL}?callback=handleGoogleScriptResponse&query=${encodedUserQuery}&article=${encodedArticleText}`;
-            alert('>>> sendRequestToGoogleScript: Сформированный URL запроса: ' + script.src);
-            document.head.appendChild(script);
-            alert('>>> sendRequestToGoogleScript: Скрипт-тег ДОБАВЛЕН в <head> (если не сработает onerror, то всё ок).');
-            script.onerror = function() {
-                alert('КРИТИЧЕСКАЯ ОШИБКА: Фронтенд не смог загрузить скрипт AI. Проверьте URL Google Script и/или сетевое подключение.');
-                displayAIResponse('Критическая ошибка: не удалось загрузить скрипт AI. Проверьте URL и сеть.');
+            // Глобальная функция, чтобы Google Script её вызвал (JSONP)
+            function handleGoogleScriptResponse(data) {
+                alert('>>> handleGoogleScriptResponse ВЫЗВАНА! Получены данные: ' + JSON.stringify(data));
+                
                 const oldScript = document.getElementById('googleScriptCall');
                 if (oldScript) { oldScript.remove(); }
-            };
-        }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            alert('>>> DOMContentLoaded: Страница ДОГРУЗИЛАСЬ. JS ИНИЦИАЛИЗИРОВАН.');
-            const urlParams = new URLSearchParams(window.location.search);
-            const userQuery = urlParams.get('query');
-            alert('>>> DOMContentLoaded: userQuery из URL: ' + userQuery);
-            const hardcodedArticleContent = "Основные положения: 1.1. Регламент создания и ведения чат-бота Заботекс (далее - Регламент) определяет порядок взаимодействия между Администратором чат-бота и сотрудника при постановке задачи по разработке, внедрении, модификации и корректировке чат-бота Заботекс, разработанного на платформе Bitrix24. 1.2. Регламент применим для сотрудников, участвующих в создании, ведении, модификации и корректировке чат-бота Заботекс, разработанного на платформе Bitrix24. 1.3. При создании нового чат-бота, разработке нового функционала или корректировке существующего функционала Заботекс необходимо строго соблюдать положения настоящего Регламента.";
-            alert('>>> DOMContentLoaded: articleContent ЗАХАРДКОЖЕН: ' + hardcodedArticleContent.substring(0, 50) + '...');
-            const userQuestionDiv = document.getElementById('userQuestion');
-            if (userQuestionDiv) { userQuestionDiv.textContent = `Ваш вопрос: "${userQuery || 'Не задан'}"`; }
-            if (userQuery) {
-                alert('>>> DOMContentLoaded: Все данные есть (вопрос и статья)! Вызываем sendRequestToGoogleScript!');
-                sendRequestToGoogleScript(userQuery, hardcodedArticleContent);
-            } else {
-                alert('>>> DOMContentLoaded: ОШИБКА - userQuery отсутствует! Не вызываем sendRequestToGoogleScript.');
-                displayAIResponse('Ошибка: Отсутствует вопрос пользователя в URL.');
+                if (data && data.error) {
+                    displayAIResponse(`Ошибка от AI: ${data.error}`);
+                } else if (data && data.answer) {
+                    displayAIResponse(data.answer);
+                } else {
+                    displayAIResponse('AI вернул непонятный ответ.');
+                }
             }
-        });
-    </script>
 
-</body>
-</html>
+            // Функция, которая теперь принимает URL Google Script в качестве аргумента!
+            function sendRequestToGoogleScriptDirect(googleScriptUrl, userQuery, articleText) {
+                alert('>>> sendRequestToGoogleScriptDirect: НАЧАЛО ОТПРАВКИ ЗАПРОСА');
+                alert('>>> sendRequestToGoogleScriptDirect: userQuery: ' + userQuery);
+                alert('>>> sendRequestToGoogleScriptDirect: Входящий GoogleScriptUrl: ' + googleScriptUrl);
+                
+                displayAIResponse('Загрузка ответа от AI...');
+
+                const encodedUserQuery = encodeURIComponent(userQuery);
+                const encodedArticleText = encodeURIComponent(articleText);
+
+                const script = document.createElement('script');
+                script.id = 'googleScriptCall';
+                script.src = `${googleScriptUrl}?callback=handleGoogleScriptResponse&query=${encodedUserQuery}&article=${encodedArticleText}`;
+                
+                alert('>>> sendRequestToGoogleScriptDirect: Сформированный URL запроса: ' + script.src);
+                document.head.appendChild(script);
+                alert('>>> sendRequestToGoogleScriptDirect: Скрипт-тег ДОБАВЛЕН в <head>.');
+
+                script.onerror = function() {
+                    alert('>>> sendRequestToGoogleScriptDirect: КРИТИЧЕСКАЯ ОШИБКА: script.onerror СРАБОТАЛ! Не удалось загрузить скрипт AI.');
+                    displayAIResponse('Критическая ошибка: не удалось загрузить скрипт AI. Проверьте URL и сеть.');
+                    const oldScript = document.getElementById('googleScriptCall');
+                    if (oldScript) { oldScript.remove(); }
+                };
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                alert('>>> DOMContentLoaded: Страница ДОГРУЗИЛАСЬ. JS ИНИЦИАЛИЗИРОВАН.');
+                const urlParams = new URLSearchParams(window.location.search);
+                const userQuery = urlParams.get('query');
+                alert('>>> DOMContentLoaded: userQuery из URL: ' + userQuery);
+                
+                const hardcodedArticleContent = "Основные положения: 1.1. Регламент создания и ведения чат-бота Заботекс (далее - Регламент) определяет порядок взаимодействия между Администратором чат-бота и сотрудника при постановке задачи по разработке, внедрении, модификации и корректировке чат-бота Заботекс, разработанного на платформе Bitrix24. 1.2. Регламент применим для сотрудников, участвующих в создании, ведении, модификации и корректировке чат-бота Заботекс, разработанного на платформе Bitrix24. 1.3. При создании нового чат-бота, разработке нового функционала или корректировке существующего функционала Заботекс необходимо строго соблюдать положения настоящего Регламента.";
+                alert('>>> DOMContentLoaded: articleContent ЗАХАРДКОЖЕН: ' + hardcodedArticleContent.substring(0, 50) + '...');
+
+                const userQuestionDiv = document.getElementById('userQuestion');
+                if (userQuestionDiv) { userQuestionDiv.textContent = `Ваш вопрос: "${userQuery || 'Не задан'}"`; }
+
+                if (userQuery) {
+                    alert('>>> DOMContentLoaded: Все данные есть (вопрос и статья)! Вызываем sendRequestToGoogleScriptDirect!');
+                    // --- ВОТ ЗДЕСЬ МЫ ПРЯМО ПЕРЕДАЁМ URL! ---
+                    sendRequestToGoogleScriptDirect('https://script.google.com/macros/s/AKfycbymjD-NkZ408_tQxf7Sq8-rTpY0zOhKEKnu1scStjSCMVTA1mqMEon6D-Ctb4tIobvsFg/exec', userQuery, hardcodedArticleContent);
+                } else {
+                    alert('>>> DOMContentLoaded: ОШИБКА - userQuery отсутствует! Не вызываем sendRequestToGoogleScriptDirect.');
+                    displayAIResponse('Ошибка: Отсутствует вопрос пользователя в URL.');
+                }
+            });
+        </script>
+
+    </body>
+    </html>

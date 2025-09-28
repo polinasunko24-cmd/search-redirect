@@ -1,171 +1,58 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ответ от AI</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            color: #333;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            width: 100%;
-            text-align: center;
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        #loadingSpinner {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            display: none; /* Скрыт по умолчанию */
-            margin: 30px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #answerContainer {
-            margin-top: 20px;
-            text-align: left;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        #aiAnswer {
-            white-space: pre-wrap; /* Сохраняет форматирование абзацев */
-            font-size: 1.1em;
-            line-height: 1.6;
-            color: #555;
-        }
-        #userQuestion {
-            font-style: italic;
-            color: #777;
-            margin-bottom: 15px;
-        }
-        #errorMessage {
-            color: #e74c3c;
-            font-weight: bold;
-            margin-top: 20px;
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 id="mainTitle">Получение ответа от AI...</h1>
-        <div id="loadingSpinner"></div>
-        <p id="userQuestion" style="display: none;"></p>
-        <div id="answerContainer" style="display: none;">
-            <h2>Ответ AI:</h2>
-            <p id="aiAnswer"></p>
-        </div>
-        <p id="errorMessage"></p>
-    </div>
+<script>
+    // ***************************************************************
+    // НОВЫЙ КОД "ГОНЦА" ДЛЯ ОБХОДА CORS ЧЕРЕЗ JSONP (СКРИПТ-ТЕГ)
+    // ВСТАВЬ ЭТО ВМЕСТО ТВОЕЙ СТАРОЙ ЛОГИКИ ОТПРАВКИ ЗАПРОСА К AI
+    // ***************************************************************
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const mainTitle = document.getElementById('mainTitle');
-            const userQuestionElem = document.getElementById('userQuestion');
-            const answerContainer = document.getElementById('answerContainer');
-            const aiAnswerElem = document.getElementById('aiAnswer');
-            const errorMessageElem = document.getElementById('errorMessage');
+    // ТВОЙ НОВЫЙ АБСОЛЮТНЫЙ URL К GOOGLE APPS SCRIPT
+    const GOOGLE_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbygrBkGFPlJMKaDEeTWu5OjrAuKzQVUjlMqk7-ILMWYV_eVswvC0bKr4aZq0vAN0Yzt3g/exec';
 
-            loadingSpinner.style.display = 'block'; // Показываем спиннер сразу
+    // Эта глобальная функция будет ВЫЗВАНА твоим Google Script
+    // (потому что мы запросили 'callback=handleGoogleScriptResponse')
+    function handleGoogleScriptResponse(data) {
+        // Убедимся, что скрипт-тег, который сделал запрос, удален
+        const oldScript = document.getElementById('googleScriptCall');
+        if (oldScript) {
+            oldScript.remove();
+        }
 
-            // --- ВОТ ЗДЕСЬ АДРЕС ТВОЕГО GOOGLE APPS SCRIPT! ---
-                const googleAppsScriptWebAppUrl = 'https://script.google.com/macros/s/AKfycbzi6NnfIXuHsYhoEAEuR3tYmxDrTvuR_Iee1AQ_uz8fX4PG4Aziso2USLHEKD4TmN0TXg/exec'; // <--- ВОТ НОВЫЙ URL ВСТАВЛЕН!'; // <--- ТВОЙ URL ИЗ GOOGLE!
-            
-            // --- ЭТО ПУБЛИЧНАЯ ССЫЛКА НА ТВОЙ "Архив" (базу знаний .txt) на GitHub Pages ---
-            const knowledgeBaseUrl = 'https://raw.githubusercontent.com/polinasunko24-cmd/search-redirect/main/article_for_demo.txt.txt'; // ТВОЙ ПРАВИЛЬНЫЙ URL К СТАТЬЕ!
+        if (data.error) {
+            console.error('Ошибка от Google Script (JSONP):', data.error);
+            displayAIResponse(`Что-то пошло не так на стороне AI: ${data.error}`); // Отображаем ошибку от скрипта
+        } else {
+            console.log('Ответ от Google Script (JSONP):', data.answer);
+            displayAIResponse(data.answer); // Отображаем полученный ответ
+        }
+    }
 
-            // Получаем параметры из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            console.log("Полный URL из браузера:", window.location.href);
-            console.log("URL параметры (для отладки):", urlParams);
-            
-            const userQuery = urlParams.get('query'); // Это твой вопрос из Заботикса
-            console.log("userQuery, извлеченный из URL:", userQuery);
+    // Эта функция будет отправлять запрос к Google Script
+    // Она принимает userQuery (вопрос пользователя) и articleText (текст статьи)
+    function sendRequestToGoogleScript(userQuery, articleText) {
+        // Очищаем предыдущее сообщение об ошибке (если было)
+        displayAIResponse('Загрузка ответа от AI...'); 
 
-            if (!userQuery) {
-                loadingSpinner.style.display = 'none';
-                mainTitle.textContent = 'Ошибка!';
-                errorMessageElem.textContent = 'Не удалось найти вопрос в URL. Пожалуйста, убедитесь, что ссылка сформирована правильно (формат: ?query=ВОПРОС).';
-                errorMessageElem.style.display = 'block';
-                return; // Остановить выполнение, если вопроса нет
+        // Кодируем параметры, чтобы они были безопасны для URL
+        const encodedUserQuery = encodeURIComponent(userQuery);
+        const encodedArticleText = encodeURIComponent(articleText);
+
+        // Создаем динамический JS-скрипт тег
+        const script = document.createElement('script');
+        script.id = 'googleScriptCall'; // Даем ID, чтобы потом легко удалить
+        
+        // Формируем URL с параметрами и именем callback-функции
+        // ОБРАТИ ВНИМАНИЕ: МЫ ИСПОЛЬЗУЕМ GET-ПАРАМЕТРЫ!
+        script.src = `${GOOGLE_SCRIPT_WEB_APP_URL}?callback=handleGoogleScriptResponse&query=${encodedUserQuery}&article=${encodedArticleText}`;
+        
+        // Добавляем скрипт-тег в <head> документа, чтобы он загрузился и выполнился
+        document.head.appendChild(script);
+
+        // Это обработчик на случай, если скрипт вообще не загрузится (например, неверный URL или проблема с сетью)
+        script.onerror = function() {
+            console.error('КРИТИЧЕСКАЯ ОШИБКА: Скрипт Google Script не удалось загрузить.');
+            displayAIResponse('Произошла критическая ошибка при запросе к AI (проблемы с загрузкой скрипта). Пожалуйста, проверьте URL и подключение.');
+            const oldScript = document.getElementById('googleScriptCall');
+            if (oldScript) {
+                oldScript.remove();
             }
-
-            userQuestionElem.textContent = `Ваш вопрос: "${decodeURIComponent(userQuery)}"`;
-            userQuestionElem.style.display = 'block';
-
-            // Шаг 1: Читаем базу знаний с GitHub Pages ("Архив")
-            fetch(knowledgeBaseUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status} при загрузке базы знаний. Проверьте ссылку на Archive.`);
-                    }
-                    return response.text();
-                })
-                .then(articleText => {
-                    // Шаг 2: Отправляем запрос НАПРЯМУЮ К GOOGLE APPS SCRIPT!
-                    return fetch(googleAppsScriptWebAppUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            userQuery: decodeURIComponent(userQuery),
-                            articleText: articleText
-                        })
-                    });
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Ошибка от AI-сервера: ${response.statusText || 'Неизвестная ошибка'}. Возможно, некорректно настроен Google Apps Script, или он возвращает ошибку.`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    loadingSpinner.style.display = 'none';
-                    mainTitle.textContent = 'Готово!';
-
-                    if (data.answer) {
-                        aiAnswerElem.textContent = data.answer;
-                        answerContainer.style.display = 'block';
-                    } else if (data.error) {
-                        errorMessageElem.textContent = `Ошибка от Google Apps Script: ${data.error}`;
-                        errorMessageElem.style.display = 'block';
-                    } else {
-                        throw new Error('Ответ AI пуст или имеет неверный формат. Проверьте логи Google Apps Script.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка в процессе получения ответа:', error);
-                    loadingSpinner.style.display = 'none';
-                    mainTitle.textContent = 'Произошла ошибка!';
-                    errorMessageElem.textContent = `Что-то пошло не так: ${error.message}. Пожалуйста, попробуйте снова или проверьте настройки консоли разработчика в браузере (F12).`;
-                    errorMessageElem.style.display = 'block';
-                });
-        });
-    </script>
-</body>
-</html>
+        };
+    }

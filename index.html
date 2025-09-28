@@ -1,86 +1,148 @@
-<script>
-    const GOOGLE_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymjD-NkZ408_tQxf7Sq8-rTpY0zOhKEKnu1scStjSCMVTA1mqMEon6D-Ctb4tIobvsFg/exec';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ответ от AI</title>
+</head>
+<body>
 
-    function handleGoogleScriptResponse(data) {
-        if (data.error) {
-            alert('ОШИБКА ОТ AI: ' + data.error);
-        } else {
-            alert('ОТВЕТ ОТ AI: ' + data.answer);
-        }
+    <!-- Эти DOM-элементы ОБЯЗАТЕЛЬНО должны присутствовать в HTML,
+         чтобы скрипт мог выводить в них информацию. -->
+    <div id="userQuestion" style="font-weight: bold; margin-bottom: 10px;"></div>
+    <div id="aiResponse" style="padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">Загрузка ответа от AI...</div>
 
-        const oldScript = document.getElementById('googleScriptCall');
-        if (oldScript) {
-            oldScript.remove();
-        }
+    <!-- ************************************************************************* -->
+    <!-- ВОТ ЗДЕСЬ НАЧИНАЕТСЯ ВЕСЬ JAVASCRIPT-КОД "ГОНЦА". -->
+    <!-- ЗАМЕНИ ВЕСЬ СТАРИЙ БЛОК <script>...</script> НА ЭТОТ. -->
+    <!-- ************************************************************************* -->
+    <script>
+        // АКТУАЛЬНЫЙ РАБОЧИЙ URL К ТВОЕМУ GOOGLE APPS SCRIPT
+        // ЕГО КОРРЕКТНОСТЬ КРАЙНЕ ВАЖНА!
+        const GOOGLE_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymjD-NkZ408_tQxf7Sq8-rTpY0zOhKEKnu1scStjSCMVTA1mqMEon6D-Ctb4tIobvsFg/exec';
 
-        if (data.error) {
-            displayAIResponse(`Что-то пошло не так на стороне AI: ${data.error}`);
-        } else {
-            displayAIResponse(data.answer);
-        }
-    }
+        // Эта глобальная функция будет ВЫЗВАНА твоим Google Script
+        // Принимает объект 'data' с полями 'answer' или 'error'
+        function handleGoogleScriptResponse(data) {
+            // Вывод для отладки в консоль
+            console.log('--- handleGoogleScriptResponse: ГЛОБАЛЬНАЯ ФУНКЦИЯ ВЫЗВАНА! ---');
+            console.log('handleGoogleScriptResponse: Полученные данные от Google Script:', data);
 
-    function sendRequestToGoogleScript(userQuery, articleText) {
-        displayAIResponse('Загрузка ответа от AI...'); 
+            // Временный ALERT для быстрой проверки. Можно удалить после успешного запуска.
+            if (data && data.error) {
+                alert('ОШИБКА ОТ AI: ' + data.error);
+            } else if (data && data.answer) {
+                alert('ОТВЕТ ОТ AI: ' + data.answer);
+            } else {
+                alert('AI вернул непонятный ответ.');
+            }
 
-        const encodedUserQuery = encodeURIComponent(userQuery);
-        const encodedArticleText = encodeURIComponent(articleText);
-
-        const script = document.createElement('script');
-        script.id = 'googleScriptCall';
-        
-        script.src = `${GOOGLE_SCRIPT_WEB_APP_URL}?callback=handleGoogleScriptResponse&query=${encodedUserQuery}&article=${encodedArticleText}`;
-        
-        document.head.appendChild(script);
-
-        script.onerror = function() {
-            displayAIResponse('Критическая ошибка: не удалось загрузить скрипт AI. Проверьте URL и сеть.');
+            // Удаляем скрипт-тег после получения ответа, чтобы не засорять DOM
             const oldScript = document.getElementById('googleScriptCall');
             if (oldScript) {
                 oldScript.remove();
+                console.log('handleGoogleScriptResponse: Скрипт-тег удален из DOM.');
             }
-        };
-    }
 
-    function displayAIResponse(message) {
-        const responseDiv = document.getElementById('aiResponse');
-        if (responseDiv) {
-            responseDiv.innerHTML = message;
-        } else {
-            console.warn('Элемент с ID "aiResponse" не найден.');
+            // Отображаем ответ/ошибку на HTML-странице
+            if (data && data.error) {
+                displayAIResponse(`Ошибка от AI: ${data.error}`);
+            } else if (data && data.answer) {
+                displayAIResponse(data.answer);
+            } else {
+                displayAIResponse('AI вернул непонятный ответ.');
+            }
         }
-    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const userQuery = urlParams.get('query');
-        
-        fetch('article_for_demo.txt.txt')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Не удалось загрузить статью: ${response.statusText}.`);
-                }
-                return response.text();
-            })
-            .then(articleContent => {
-                const userQuestionDiv = document.getElementById('userQuestion');
-                if (userQuestionDiv) {
-                    userQuestionDiv.textContent = `Ваш вопрос: "${userQuery || 'Не задан'}"`;
-                }
-                
-                if (userQuery && articleContent) {
-                    sendRequestToGoogleScript(userQuery, articleContent);
-                } else if (!userQuery) {
-                    displayAIResponse('Ошибка: Отсутствует вопрос пользователя в URL.');
-                } else {
-                    displayAIResponse('Ошибка: Отсутствует текст статьи для анализа.');
-                }
-            })
-            .catch(error => {
-                displayAIResponse(`Критическая ошибка: Не удалось загрузить текст статьи. ${error.message}`);
-            });
-    });
-</script>
+        // Эта функция отправляет запрос к Google Script, используя JSONP-метод
+        function sendRequestToGoogleScript(userQuery, articleText) {
+            console.log('--- sendRequestToGoogleScript: НАЧАЛО ОТПРАВКИ ЗАПРОСА ---');
+            console.log('sendRequestToGoogleScript: Запрос пользователя:', userQuery);
+            console.log('sendRequestToGoogleScript: Текст статьи (первые 50 символов):', articleText ? articleText.substring(0, 50) : '[Статья пуста или не загружена]');
 
-<div id="userQuestion" style="font-weight: bold; margin-bottom: 10px;"></div>
-<div id="aiResponse" style="padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">Здесь будет ответ от AI...</div>
+            displayAIResponse('Загрузка ответа от AI...');
+
+            const encodedUserQuery = encodeURIComponent(userQuery);
+            const encodedArticleText = encodeURIComponent(articleText);
+
+            const script = document.createElement('script');
+            script.id = 'googleScriptCall'; // Идентификатор для скрипт-тега
+            
+            // Формируем URL запроса, СКЛЕИВАЯ БАЗОВЫЙ URL С ПАРАМЕТРАМИ
+            script.src = `${GOOGLE_SCRIPT_WEB_APP_URL}?callback=handleGoogleScriptResponse&query=${encodedUserQuery}&article=${encodedArticleText}`;
+            
+            console.log('sendRequestToGoogleScript: Сформированный URL запроса:', script.src);
+            document.head.appendChild(script); // Добавляем скрипт-тег в <head>console.log('sendRequestToGoogleScript: Скрипт-тег добавлен в <head> DOM.');
+
+            // Обработчик ошибок загрузки скрипта (сработает, если браузер не может загрузить ресурс)
+            script.onerror = function() {
+                console.error('sendRequestToGoogleScript: КРИТИЧЕСКАЯ ОШИБКА: script.onerror сработал! Не удалось загрузить скрипт AI.');
+                alert('КРИТИЧЕСКАЯ ОШИБКА: Фронтенд не смог загрузить скрипт AI. Проверьте URL Google Script и/или сетевое подключение.');
+                displayAIResponse('Критическая ошибка: не удалось загрузить скрипт AI. Проверьте URL и сеть.');
+                const oldScript = document.getElementById('googleScriptCall');
+                if (oldScript) {
+                    oldScript.remove();
+                }
+            };
+        }
+
+        // Вспомогательная функция для отображения ответов в HTML-элементе
+        function displayAIResponse(message) {
+            console.log('displayAIResponse: Попытка отобразить сообщение:', message);
+            const responseDiv = document.getElementById('aiResponse');
+            if (responseDiv) {
+                responseDiv.innerHTML = message;
+                console.log('displayAIResponse: Сообщение отображено в #aiResponse.');
+            } else {
+                console.warn('displayAIResponse: Элемент #aiResponse не найден в DOM.');
+            }
+        }
+
+        // Основная логика, запускающаяся после полной загрузки HTML-документа
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('--- DOMContentLoaded: Событие загрузки HTML-документа. ---');
+            const urlParams = new URLSearchParams(window.location.search);
+            const userQuery = urlParams.get('query'); // Извлекаем userQuery из URL
+            console.log('DOMContentLoaded: userQuery из URL:', userQuery);
+            
+            // Загрузка файла Article из того же домена на GitHub Pages
+            fetch('article_for_demo.txt.txt') // Убедись, что ПУТЬ к файлу верен!
+                .then(response => {
+                    console.log('DOMContentLoaded: Запрос article_for_demo.txt.txt, статус:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`Не удалось загрузить статью: ${response.statusText}. Проверьте путь к файлу.`);
+                    }
+                    return response.text();
+                })
+                .then(articleContent => {
+                    console.log('DOMContentLoaded: articleContent загружен (первые 50 символов):', articleContent ? articleContent.substring(0, 50) : '[Статья пуста]');
+
+                    const userQuestionDiv = document.getElementById('userQuestion');
+                    if (userQuestionDiv) {
+                        userQuestionDiv.textContent = `Ваш вопрос: "${userQuery || 'Не задан'}"`;
+                        console.log('DOMContentLoaded: Вопрос пользователя отображен в #userQuestion.');
+                    } else {
+                        console.warn('DOMContentLoaded: Элемент #userQuestion не найден в DOM.');
+                    }
+                    
+                    // Если есть и вопрос, и статья, отправляем запрос к Google Script
+                    if (userQuery && articleContent) {
+                        sendRequestToGoogleScript(userQuery, articleContent);
+                        console.log('DOMContentLoaded: sendRequestToGoogleScript вызвана с userQuery и articleContent.');
+                    } else if (!userQuery) {
+                        displayAIResponse('Ошибка: Отсутствует вопрос пользователя в URL. Убедитесь, что Bitrix24 передает параметр "query".');
+                        console.error('DOMContentLoaded: userQuery отсутствует в URL.');
+                    } else { // userQuery есть, но articleContent пуст
+                        displayAIResponse('Ошибка: Отсутствует текст статьи для анализа. Проверьте файл "article_for_demo.txt.txt" и его путь.');
+                        console.error('DOMContentLoaded: articleContent отсутствует или не загружен.');
+                    } })
+                .catch(error => {
+                    console.error('DOMContentLoaded: КРИТИЧЕСКАЯ ОШИБКА ПРИ ЗАГРУЗКЕ СТАТЬИ:', error);
+                    displayAIResponse(`Критическая ошибка при загрузке статьи: ${error.message}`);
+                });
+        });
+    </script>
+    <!-- ************************************************************************* -->
+
+</body>
+</html>

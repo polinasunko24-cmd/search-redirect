@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
     <html lang="ru">
     <head>
         <meta charset="UTF-8">
@@ -7,21 +7,20 @@
     </head>
     <body>
 
-        <div id="userQuestion" style="font-weight: bold; margin-bottom: 10px;"></div>
-        <div id="aiResponse" style="padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">Загрузка ответа от AI...</div>
+        <!-- СЮДА МЫ ДОБАВЛЯЕМ URL, ЧТОБЫ СКРИПТ ЕГО ПРОЧЕЛ! -->
+        <div id="aiAppRoot" data-google-script-url="https://script.google.com/macros/s/AKfycbymjD-NkZ408_tQxf7Sq8-rTpY0zOhKEKnu1scStjSCMVTA1mqMEon6D-Ctb4tIobvsFg/exec">
+            <div id="userQuestion" style="font-weight: bold; margin-bottom: 10px;"></div>
+            <div id="aiResponse" style="padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">Загрузка ответа от AI...</div>
+        </div>
 
         <script>
-            // --- ВНИМАНИЕ: МЫ УБРАЛИ КОНСТАНТУ И БУДЕМ ВСТАВЛЯТЬ URL НАПРЯМУЮ! ---
-            // URL Google Script будет передаваться как аргумент.
+            // --- ТЕПЕРЬ МЫ БУДЕМ ЧИТАТЬ URL ИЗ HTML! ---
 
-            function displayAIResponse(message) { // Эта функция только отображает
+            function displayAIResponse(message) {
                 const responseDiv = document.getElementById('aiResponse');
-                if (responseDiv) {
-                    responseDiv.innerHTML = message;
-                }
+                if (responseDiv) { responseDiv.innerHTML = message; }
             }
 
-            // Глобальная функция, чтобы Google Script её вызвал (JSONP)
             function handleGoogleScriptResponse(data) {
                 alert('>>> handleGoogleScriptResponse ВЫЗВАНА! Получены данные: ' + JSON.stringify(data));
                 
@@ -37,11 +36,10 @@
                 }
             }
 
-            // Функция, которая теперь принимает URL Google Script в качестве аргумента!
-            function sendRequestToGoogleScriptDirect(googleScriptUrl, userQuery, articleText) {
-                alert('>>> sendRequestToGoogleScriptDirect: НАЧАЛО ОТПРАВКИ ЗАПРОСА');
-                alert('>>> sendRequestToGoogleScriptDirect: userQuery: ' + userQuery);
-                alert('>>> sendRequestToGoogleScriptDirect: Входящий GoogleScriptUrl: ' + googleScriptUrl);
+            function sendRequestToGoogleScriptFromHtml(googleScriptUrl, userQuery, articleText) {
+                alert('>>> sendRequestToGoogleScriptFromHtml: НАЧАЛО ОТПРАВКИ ЗАПРОСА');
+                alert('>>> sendRequestToGoogleScriptFromHtml: userQuery: ' + userQuery);
+                alert('>>> sendRequestToGoogleScriptFromHtml: Входящий GoogleScriptUrl: ' + googleScriptUrl);
                 
                 displayAIResponse('Загрузка ответа от AI...');
 
@@ -52,12 +50,12 @@
                 script.id = 'googleScriptCall';
                 script.src = `${googleScriptUrl}?callback=handleGoogleScriptResponse&query=${encodedUserQuery}&article=${encodedArticleText}`;
                 
-                alert('>>> sendRequestToGoogleScriptDirect: Сформированный URL запроса: ' + script.src);
+                alert('>>> sendRequestToGoogleScriptFromHtml: Сформированный URL запроса: ' + script.src);
                 document.head.appendChild(script);
-                alert('>>> sendRequestToGoogleScriptDirect: Скрипт-тег ДОБАВЛЕН в <head>.');
+                alert('>>> sendRequestToGoogleScriptFromHtml: Скрипт-тег ДОБАВЛЕН в <head>.');
 
                 script.onerror = function() {
-                    alert('>>> sendRequestToGoogleScriptDirect: КРИТИЧЕСКАЯ ОШИБКА: script.onerror СРАБОТАЛ! Не удалось загрузить скрипт AI.');
+                    alert('>>> sendRequestToGoogleScriptFromHtml: КРИТИЧЕСКАЯ ОШИБКА: script.onerror СРАБОТАЛ! Не удалось загрузить скрипт AI.');
                     displayAIResponse('Критическая ошибка: не удалось загрузить скрипт AI. Проверьте URL и сеть.');
                     const oldScript = document.getElementById('googleScriptCall');
                     if (oldScript) { oldScript.remove(); }
@@ -66,6 +64,17 @@
 
             document.addEventListener('DOMContentLoaded', () => {
                 alert('>>> DOMContentLoaded: Страница ДОГРУЗИЛАСЬ. JS ИНИЦИАЛИЗИРОВАН.');
+                
+                const appRoot = document.getElementById('aiAppRoot');
+                const googleScriptUrl = appRoot ? appRoot.dataset.googleScriptUrl : null;
+                alert('>>> DOMContentLoaded: URL Google Script прочитан из HTML: ' + googleScriptUrl);
+
+                if (!googleScriptUrl) {
+                    alert('>>> DOMContentLoaded: КРИТИЧЕСКАЯ ОШИБКА: Не удалось прочитать GOOGLE_SCRIPT_WEB_APP_URL из HTML. Проверьте HTML-разметку!');
+                    displayAIResponse('Критическая ошибка: неверно указан URL Google Script в HTML-теге. Обратитесь к разработчику.');
+                    return; // Прерываем выполнение
+                }
+
                 const urlParams = new URLSearchParams(window.location.search);
                 const userQuery = urlParams.get('query');
                 alert('>>> DOMContentLoaded: userQuery из URL: ' + userQuery);
@@ -78,8 +87,7 @@
 
                 if (userQuery) {
                     alert('>>> DOMContentLoaded: Все данные есть (вопрос и статья)! Вызываем sendRequestToGoogleScriptDirect!');
-                    // --- ВОТ ЗДЕСЬ МЫ ПРЯМО ПЕРЕДАЁМ URL! ---
-                    sendRequestToGoogleScriptDirect('https://script.google.com/macros/s/AKfycbymjD-NkZ408_tQxf7Sq8-rTpY0zOhKEKnu1scStjSCMVTA1mqMEon6D-Ctb4tIobvsFg/exec', userQuery, hardcodedArticleContent);
+                    sendRequestToGoogleScriptFromHtml(googleScriptUrl, userQuery, hardcodedArticleContent);
                 } else {
                     alert('>>> DOMContentLoaded: ОШИБКА - userQuery отсутствует! Не вызываем sendRequestToGoogleScriptDirect.');
                     displayAIResponse('Ошибка: Отсутствует вопрос пользователя в URL.');
